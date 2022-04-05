@@ -65,7 +65,31 @@ def create_labels_df(folder):
     return df
 
 
-def yolo_obj_detection_split_data(folder, train_pct=.7, test_pct=.2, val_pct=.1, weight=.01, batch_size=1):
+def create_model_files(folder, labels, df_train, df_val, df_test):
+    # Write dataset files
+    write_file(df_train, f"{folder}train.txt")
+    write_file(df_val, f"{folder}val.txt")
+    write_file(df_test, f"{folder}test.txt")
+    # Create obj.names file i.e., label names
+    with open(f"{folder}obj.names", "w") as f:
+        f.write('\n'.join(labels))
+    # Create obj.data files i.e., info for training
+    with open(f"{folder}obj.data", 'w') as f:
+        f.write(f"classes = {len(labels)}\n")
+        f.write(f"train = {folder}train.txt\n")
+        f.write(f"valid = {folder}val.txt\n")
+        f.write(f"names = {folder}obj.names\n")
+        f.write(f"backup = backup/")
+
+    with open(f"{folder}obj_test.data", 'w') as f:
+        f.write(f"classes = {len(labels)}\n")
+        f.write(f"train = {folder}train.txt\n")
+        f.write(f"valid = {folder}test.txt\n")
+        f.write(f"names = {folder}obj.names\n")
+        f.write(f"backup = backup/")
+
+
+def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=.1, weight=.01, batch_size=1):
     """TODO: write docstring"""
     df = create_labels_df(folder)  # Create master dataframe with a line per label
     df_train, df_val, df_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()  # Create dataframes for split
@@ -112,6 +136,5 @@ def yolo_obj_detection_split_data(folder, train_pct=.7, test_pct=.2, val_pct=.1,
     print_summary(df_train, "Training", total_records)
     print_summary(df_val, "Validation", total_records)
     print_summary(df_test, "Test", total_records)
-    write_file(df_train, f"{folder}train.txt")
-    write_file(df_val, f"{folder}val.txt")
-    write_file(df_test, f"{folder}test.txt")
+    create_model_files(folder, labels, df_train, df_val, df_test)
+

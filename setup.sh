@@ -11,3 +11,9 @@ sed -i 's/OPENMP=0/OPENMP=1/' Makefile
 
 # build darknet
 make
+
+# Fetch YOLOv4-tiny weights
+cd ..
+wget https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.conv.29
+# Copy Darknet config
+cp ./darknet/cfg/yolov4-tiny-custom.cfg yolov4-tiny.cfg
