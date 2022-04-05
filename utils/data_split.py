@@ -33,7 +33,7 @@ def calculate_loss(pct, df_len, total_len, mse_loss_diff, weight=.01):
 
 def write_file(df, dest):
     """TODO: write docstring"""
-    fnames = df["fname"].unique()
+    fnames = df["fname"].str.replace("txt", "jpg").unique()
     with open(dest, "w") as f:
         for fname in fnames:
             f.write(f"{fname}\n")
@@ -95,7 +95,7 @@ def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=
     df_train, df_val, df_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()  # Create dataframes for split
     subject_grouped_df = df.groupby(["fname"], sort=False, as_index=False)  # Group by file
     category_grouped_df = df.groupby("class_id").count()[["fname"]] / len(df) * 100  # Get class percentage distribution
-    print(f"{len(df['fnames'].unique())} number of images")
+    print(f"{len(df['fname'].unique())} number of images")
     print(f"{len(df['class_id'])} number of labels")
     print("\nClass Distribution\n", df["class_id"].value_counts())
     print("\nClass Percentage Distribution\n", category_grouped_df)
