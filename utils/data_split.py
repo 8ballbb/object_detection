@@ -1,4 +1,5 @@
 from glob import glob
+import os
 import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
@@ -36,7 +37,7 @@ def write_file(df, dest):
     fnames = df["fname"].str.replace("txt", "jpg").unique()
     with open(dest, "w") as f:
         for fname in fnames:
-            f.write(f"{fname}\n")
+            f.write(f"{dest}{fname}\n")
 
 
 def print_summary(df, set_name, total):
@@ -66,6 +67,8 @@ def create_labels_df(folder):
 
 
 def create_model_files(folder, labels, df_train, df_val, df_test):
+    if not os.path.exists(folder):
+        os.mkdir(folder)
     # Write dataset files
     write_file(df_train, f"{folder}train.txt")
     write_file(df_val, f"{folder}val.txt")
@@ -89,9 +92,9 @@ def create_model_files(folder, labels, df_train, df_val, df_test):
         f.write(f"backup = backup/")
 
 
-def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=.1, weight=.01, batch_size=1):
+def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=.1):
     """TODO: write docstring"""
-    df = create_labels_df(folder)  # Create master dataframe with a line per label
+    df = create_labels_df(f"{folder}data/")  # Create master dataframe with a line per label
     df_train, df_val, df_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()  # Create dataframes for split
     subject_grouped_df = df.groupby(["fname"], sort=False, as_index=False)  # Group by file
     category_grouped_df = df.groupby("class_id").count()[["fname"]] / len(df) * 100  # Get class percentage distribution
@@ -136,5 +139,5 @@ def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=
     print_summary(df_train, "Training", total_records)
     print_summary(df_val, "Validation", total_records)
     print_summary(df_test, "Test", total_records)
-    create_model_files(folder, labels, df_train, df_val, df_test)
+    create_model_files(f"{folder}model_files/", labels, df_train, df_val, df_test)
 
