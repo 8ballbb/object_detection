@@ -32,12 +32,12 @@ def calculate_loss(pct, df_len, total_len, mse_loss_diff, weight=.01):
     return loss
 
 
-def write_file(df, dest):
+def write_file(df, folder, set_name):
     """TODO: write docstring"""
     fnames = df["fname"].str.replace("txt", "jpg").unique()
-    with open(dest, "w") as f:
+    with open(f"{folder}model_files/{set_name}", "w") as f:
         for fname in fnames:
-            f.write(f"{dest}{fname}\n")
+            f.write(f"{folder}data/{fname}\n")
 
 
 def print_summary(df, set_name, total):
@@ -67,33 +67,32 @@ def create_labels_df(folder):
 
 
 def create_model_files(folder, labels, df_train, df_val, df_test):
-    if not os.path.exists(folder):
-        os.mkdir(folder)
     # Write dataset files
-    write_file(df_train, f"{folder}train.txt")
-    write_file(df_val, f"{folder}val.txt")
-    write_file(df_test, f"{folder}test.txt")
+    write_file(df_train, folder, "train.txt")
+    write_file(df_val, folder, "val.txt")
+    write_file(df_test, folder, "test.txt")
     # Create obj.names file i.e., label names
-    with open(f"{folder}obj.names", "w") as f:
+    with open(f"{folder}model_files/obj.names", "w") as f:
         f.write('\n'.join(labels))
     # Create obj.data files i.e., info for training
-    with open(f"{folder}obj.data", 'w') as f:
+    with open(f"{folder}model_files/obj.data", 'w') as f:
         f.write(f"classes = {len(labels)}\n")
-        f.write(f"train = {folder}train.txt\n")
-        f.write(f"valid = {folder}val.txt\n")
-        f.write(f"names = {folder}obj.names\n")
+        f.write(f"train = {folder}model_files/train.txt\n")
+        f.write(f"valid = {folder}model_files/val.txt\n")
+        f.write(f"names = {folder}model_files/obj.names\n")
         f.write(f"backup = backup/")
 
-    with open(f"{folder}obj_test.data", 'w') as f:
+    with open(f"{folder}model_files/obj_test.data", 'w') as f:
         f.write(f"classes = {len(labels)}\n")
-        f.write(f"train = {folder}train.txt\n")
-        f.write(f"valid = {folder}test.txt\n")
-        f.write(f"names = {folder}obj.names\n")
+        f.write(f"train = {folder}model_files/train.txt\n")
+        f.write(f"valid = {folder}model_files/test.txt\n")
+        f.write(f"names = {folder}model_files/obj.names\n")
         f.write(f"backup = backup/")
 
 
 def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=.1):
     """TODO: write docstring"""
+    assert train_pct + test_pct + val_pct == 1., "Percentages must add up to 1"
     df = create_labels_df(f"{folder}data/")  # Create master dataframe with a line per label
     df_train, df_val, df_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()  # Create dataframes for split
     subject_grouped_df = df.groupby(["fname"], sort=False, as_index=False)  # Group by file
@@ -139,5 +138,5 @@ def yolo_obj_detection_setup(folder, labels, train_pct=.7, test_pct=.2, val_pct=
     print_summary(df_train, "Training", total_records)
     print_summary(df_val, "Validation", total_records)
     print_summary(df_test, "Test", total_records)
-    create_model_files(f"{folder}model_files/", labels, df_train, df_val, df_test)
+    create_model_files(folder, labels, df_train, df_val, df_test)
 

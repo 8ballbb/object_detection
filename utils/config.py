@@ -3,20 +3,18 @@ from collections.abc import Iterable
 
 
 def update_config(
-    cfg_file, labels, height=None, width=None, max_batch=None, steps=None, batch=None, subdivisions=None):
+    cfg_file, labels, input_size=None, max_batch=None, steps=None, batch=None, subdivisions=None):
   with open(cfg_file) as f:
     s = f.read()
   # Height and Width
-  if height is not None:
-    assert height % 32 == 0, "height must be divisible by 32 (default 416)"
-    s = re.sub("height=\d*", f"height={height}", s)
-  if width is not None:
-    assert width % 32 == 0, "width must be divisible by 32 (default 416)"
-    s = re.sub("width=\d*", f"width={width}", s)
+  if input_size is not None:
+    assert input_size % 32 == 0, "input_size must be divisible by 32 (default 416)"
+    s = re.sub("height=\d*", f"height={input_size}", s)
+    s = re.sub("width=\d*", f"width={input_size}", s)
   
   # Max Batch
   if max_batch is not None:
-    assert max_batch >= len(labels) * 2000, "Minimum 2000 per class (default 500,200)"
+    assert max_batch >= len(labels) * 2000, "Minimum 2000 per class (default 500200)"
   else:
     max_batch = len(labels) * 2000
   s = re.sub("max_batches = \d*", f"max_batches = {max_batch}", s)
