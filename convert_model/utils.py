@@ -1,20 +1,20 @@
 import numpy as np
-from core.config import cfg
 
 
-def load_weights(model, weights_file, is_tiny=True):
+def load_weights(model, weights_file, is_tiny=False):
     if is_tiny:
         layer_size = 21
         output_pos = [17, 20]
     else:
         layer_size = 110
         output_pos = [93, 101, 109]
-    wf = open(weights_file, "rb")
-    # major, minor, revision, seen, _ = np.fromfile(wf, dtype=np.int32, count=5)
+    wf = open(weights_file, 'rb')
+    major, minor, revision, seen, _ = np.fromfile(wf, dtype=np.int32, count=5)
+
     j = 0
     for i in range(layer_size):
-        conv_layer_name = "conv2d_%d" %i if i > 0 else "conv2d"
-        bn_layer_name = "batch_normalization_%d" %j if j > 0 else "batch_normalization"
+        conv_layer_name = 'conv2d_%d' %i if i > 0 else 'conv2d'
+        bn_layer_name = 'batch_normalization_%d' %j if j > 0 else 'batch_normalization'
 
         conv_layer = model.get_layer(conv_layer_name)
         filters = conv_layer.filters
@@ -46,11 +46,9 @@ def load_weights(model, weights_file, is_tiny=True):
 
 
 def read_class_names(class_file_name):
-    names = {}
-    with open(class_file_name, "r") as data:
-        for ID, name in enumerate(data):
-            names[ID] = name.strip("\n")
-    return names
+    with open(class_file_name, "r") as f:
+        class_names = [line.strip("\n") for line in f.readlines()]
+    return class_names
 
 
 def get_anchors(anchors_path, tiny=False):
@@ -61,14 +59,14 @@ def get_anchors(anchors_path, tiny=False):
         return anchors.reshape(3, 3, 2)
 
 
-def load_config(tiny):
+def load_config(class_file_name, tiny):
     if tiny:
-        STRIDES = np.array(cfg.YOLO.STRIDES_TINY)
-        ANCHORS = get_anchors(cfg.YOLO.ANCHORS_TINY, tiny)
-        XYSCALE = cfg.YOLO.XYSCALE_TINY
+        strides = np.array([16, 32])
+        anchors = get_anchors([23,27, 37,58, 81,82, 81,82, 135,169, 344,319], tiny)
+        xyscale = [1.05, 1.05]
     else:
-        STRIDES = np.array(cfg.YOLO.STRIDES)
-        ANCHORS = get_anchors(cfg.YOLO.ANCHORS, tiny)
-        XYSCALE = cfg.YOLO.XYSCALE
-    NUM_CLASS = len(read_class_names(cfg.YOLO.CLASSES))
-    return STRIDES, ANCHORS, NUM_CLASS, XYSCALE
+        strides = np.array([8, 16, 32])
+        anchors = get_anchors([12,16, 19,36, 40,28, 36,75, 76,55, 72,146, 142,110, 192,243, 459,401], tiny)
+        xyscale = [1.2, 1.1, 1.05]
+    num_class = len(read_class_names(class_file_name))
+    return strides, anchors, num_class, xyscale

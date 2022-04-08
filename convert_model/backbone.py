@@ -1,5 +1,5 @@
 import tensorflow as tf
-import core.common as common
+import convert_model.common as common
 
 
 def darknet53(input_data):
