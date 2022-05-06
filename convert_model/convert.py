@@ -1,10 +1,10 @@
 import tensorflow as tf
-from convert_model.yolov4 import YOLO, decode, filter_boxes
-import utils as utils
+from .yolov4 import YOLO, decode, filter_boxes
+from .utils import load_config, load_weights
 
 
 def convert_darknet_to_tf(model_files, weights="yolov4-tiny_best.weights", input_size=416, score_threshold=.2, tiny=False, framework="tf"):
-    strides, anchors, num_class, xyscale = utils.load_config(f"{model_files}obj.names", tiny)
+    strides, anchors, num_class, xyscale = load_config(f"{model_files}obj.names", tiny)
     input_layer = tf.keras.layers.Input([input_size, input_size, 3])
     feature_maps = YOLO(input_layer, num_class, tiny)
     bbox_tensors = []
@@ -37,7 +37,7 @@ def convert_darknet_to_tf(model_files, weights="yolov4-tiny_best.weights", input
             input_shape=tf.constant([input_size, input_size]))
         pred = tf.concat([boxes, pred_conf], axis=-1)
     model = tf.keras.Model(input_layer, pred)
-    utils.load_weights(model, f"{model_files}{weights}", tiny)
+    load_weights(model, f"{model_files}{weights}", tiny)
     model.summary()
     if framework == "tf":
         output = f"{model_files}{weights.replace('.weights', '_tf')}"
